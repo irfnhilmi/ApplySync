@@ -98,6 +98,9 @@ function setLoading(loading) {
 // Google Authentication
 // ─────────────────────────────────────────────
 
+const CLIENT_ID = '137045037004-g843cuenaut79iovc21nih4e7sctpd9g.apps.googleusercontent.com';
+const REDIRECT_URI = `https://${chrome.runtime.id}.chromiumapp.org/`;
+
 const OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/drive.file',
@@ -105,13 +108,24 @@ const OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/userinfo.email'
 ];
 
-function getAuthToken(interactive) {
+function launchOAuth(interactive) {
   return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive, scopes: OAUTH_SCOPES }, (accessToken) => {
-      if (chrome.runtime.lastError || !accessToken) {
-        reject(new Error(chrome.runtime.lastError?.message || 'No token'));
+    const params = new URLSearchParams({
+      client_id: CLIENT_ID,
+      redirect_uri: REDIRECT_URI,
+      response_type: 'token',
+      scope: OAUTH_SCOPES.join(' '),
+    });
+    if (!interactive) params.set('prompt', 'none');
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?${params}`;
+    chrome.identity.launchWebAuthFlow({ url: authUrl, interactive }, (redirectUrl) => {
+      if (chrome.runtime.lastError || !redirectUrl) {
+        reject(new Error(chrome.runtime.lastError?.message || 'Auth failed'));
         return;
       }
+      const fragment = new URL(redirectUrl).hash.slice(1);
+      const accessToken = new URLSearchParams(fragment).get('access_token');
+      if (!accessToken) { reject(new Error('No access token')); return; }
       token = accessToken;
       resolve(accessToken);
     });
@@ -119,11 +133,11 @@ function getAuthToken(interactive) {
 }
 
 async function signIn() {
-  return getAuthToken(true);
+  return launchOAuth(true);
 }
 
 async function refreshToken() {
-  return getAuthToken(false);
+  return launchOAuth(false);
 }
 
 async function getUserEmail(accessToken) {
@@ -290,9 +304,8 @@ async function createSpreadsheet() {
     let res = await doFetch();
 
     if (res.status === 401) {
-      // Stale cached token — evict it, force interactive re-auth, then retry once
-      await new Promise(r => chrome.identity.removeCachedAuthToken({ token }, r));
-      await getAuthToken(true);
+      token = null;
+      await launchOAuth(true);
       res = await doFetch();
     }
 
@@ -322,9 +335,8 @@ async function findExistingSpreadsheet() {
   let res = await doSearch();
 
   if (res.status === 401 || res.status === 403) {
-    // Token missing scope or stale — evict and re-auth interactively, then retry
-    await new Promise(r => chrome.identity.removeCachedAuthToken({ token }, r));
-    await getAuthToken(true);
+    token = null;
+    await launchOAuth(true);
     res = await doSearch();
   }
 
@@ -422,15 +434,11 @@ document.getElementById('btnGoogle')
 document.getElementById('btnSignout')
   .addEventListener('click', () => {
     if (token) {
-      chrome.identity.removeCachedAuthToken(
-        { token },
-        () => {}
-      );
+      fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' }).catch(() => {});
+      token = null;
     }
 
     chrome.storage.local.remove(['email']);
-
-    token = null;
 
     showSignIn();
 
