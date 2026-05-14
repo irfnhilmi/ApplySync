@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en" style="background:transparent;">
+<head>
+  <meta charset="UTF-8" />
+  <title>ApplySync</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      background: transparent;
+    }
+
+    body {
+      width: 372px;
+      font-family: 'DM Sans', 'Segoe UI', sans-serif;
+      background: transparent;
+      color: #1a1a1a;
+      font-size: 13px;
+      padding: 6px;
+      margin: 0;
+    }
+
+    .popup-wrap {
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      width: 360px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* ── SHARED HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px 9px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .header img.logo {
+      height: 26px;
+      width: auto;
+    }
+
+    .header-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ══════════════════════════════════════
+       SIGN-IN SCREEN
+    ══════════════════════════════════════ */
+    #signInScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px 28px;
+      text-align: center;
+    }
+
+    .signin-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(255, 69, 0, 0.18);
+    }
+
+    .signin-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111;
+      margin-bottom: 8px;
+      letter-spacing: -0.4px;
+    }
+
+    .signin-sub {
+      font-size: 13px;
+      color: #999;
+      line-height: 1.5;
+      margin-bottom: 28px;
+      max-width: 260px;
+    }
+
+    .btn-google {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: #fff;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .btn-google:hover {
+      border-color: #FF4500;
+      box-shadow: 0 2px 12px rgba(255, 69, 0, 0.12);
+      background: #fff8f6;
+    }
+
+    .btn-google svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    .signin-divider {
+      width: 100%;
+      height: 1px;
+      background: #f0f0f0;
+      margin: 20px 0;
+    }
+
+    .signin-footer {
+      font-size: 11px;
+      color: #bbb;
+      line-height: 1.5;
+    }
+
+    /* ══════════════════════════════════════
+       MAIN APP SCREEN
+    ══════════════════════════════════════ */
+    #appScreen { display: none; }
+
+    /* ── Connected status strip ── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 16px;
+      background: #f6fdf8;
+      border-bottom: 1px solid #e8f5ed;
+      font-size: 11px;
+    }
+
+    .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #2db350;
+      box-shadow: 0 0 6px #2db35066;
+      flex-shrink: 0;
+    }
+
+    #statusText { color: #2db350; font-weight: 600; flex: 1; }
+
+    .btn-signout {
+      background: none;
+      border: none;
+      color: #bbb;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: color 0.15s;
+    }
+    .btn-signout:hover { color: #FF4500; }
+
+    /* ── Body ── */
+    .body { padding: 9px 13px; }
+
+    .btn-scrape {
+      width: 100%;
+      background: #fff7f4;
+      border: 1.5px dashed #FF4500;
+      border-radius: 10px;
+      color: #FF4500;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      letter-spacing: 0.1px;
+    }
+    .btn-scrape:hover { background: #FF4500; color: white; border-style: solid; }
+
+    .form-row { margin-bottom: 6px; }
+
+    label {
+      display: block;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 3px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #fafafa;
+      border: 1.5px solid #ebebeb;
+      border-radius: 9px;
+      color: #1a1a1a;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      padding-right: 26px;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #FF4500;
+      background: #fff;
+    }
+    input::placeholder, textarea::placeholder { color: #ccc; }
+    textarea { resize: none; height: 40px; }
+
+    .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; }
+
+    .btn-save {
+      width: 100%;
+      background: linear-gradient(135deg, #FF4500 0%, #ff6a2f 100%);
+      border: none;
+      border-radius: 11px;
+      color: white;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 5px;
+      letter-spacing: 0.1px;
+      transition: opacity 0.15s, transform 0.1s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      box-shadow: 0 4px 14px rgba(255,69,0,0.28);
+    }
+    .btn-save:hover { opacity: 0.92; box-shadow: 0 6px 18px rgba(255,69,0,0.38); }
+    .btn-save:active { transform: scale(0.98); }
+    .btn-save:disabled { background: linear-gradient(135deg, #ffb89e 0%, #ffcdb8 100%); box-shadow: none; cursor: not-allowed; }
+
+    .spinner {
+      width: 13px; height: 13px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Footer ── */
+    .counter-strip {
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      padding: 6px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #ccc;
+    }
+    .counter-strip span.val { color: #FF4500; font-weight: 800; }
+    .sheet-link {
+      color: #2db350; font-size: 11px; font-weight: 700; text-decoration: none;
+    }
+    .sheet-link:hover { text-decoration: underline; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 12px; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #2db350; color: white;
+      padding: 8px 18px; border-radius: 12px;
+      font-size: 12px; font-weight: 700;
+      opacity: 0; transition: all 0.25s;
+      pointer-events: none; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { background: #ef4444; }
+
+    .btn-google.loading { opacity: 0.6; pointer-events: none; }
+  </style>
+</head>
+<body style="background:transparent;">
+
+<div class="popup-wrap">
+
+<!-- ── Shared header ── -->
+<div class="header">
+  <img class="logo" src="icons/logo.png" alt="ApplySync" />
+  <span class="header-badge">Job Tracker</span>
+</div>
+
+<!-- ══ SIGN-IN SCREEN ══ -->
+<div id="signInScreen">
+  <img class="signin-icon" src="icons/icon128.png" alt="ApplySync" />
+  <div class="signin-title">Sign in to ApplySync</div>
+  <div class="signin-sub">Connect your Google account to log applications directly to your spreadsheet.</div>
+
+  <button class="btn-google" id="btnGoogle">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Sign in with Google
+  </button>
+
+  <div class="signin-divider"></div>
+  <div class="signin-footer">Your data syncs directly to your Google Sheet.<br>No data is stored outside your account.</div>
+</div>
+
+<!-- ══ APP SCREEN ══ -->
+<div id="appScreen">
+
+  <div class="status-bar">
+    <div class="dot"></div>
+    <span id="statusText">Connected</span>
+    <button class="btn-signout" id="btnSignout">Sign out</button>
+  </div>
+
+  <div class="body">
+
+    <button class="btn-scrape" id="btnScrape">✨ Auto-fill from this page</button>
+
+    <div class="form-row">
+      <label>Company</label>
+      <input type="text" id="company" placeholder="e.g. Goldman Sachs" />
+    </div>
+
+    <div class="row-2">
+      <div class="form-row">
+        <label>Role / Position</label>
+        <input type="text" id="role" placeholder="e.g. Software Engineer" />
+      </div>
+      <div class="form-row">
+        <label>Location</label>
+        <input type="text" id="location" placeholder="e.g. London" />
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-row">
+        <label>Date Applied</label>
+        <input type="date" id="dateApplied" />
+      </div>
+      <div class="form-row">
+        <label>Start Date</label>
+        <input type="text" id="startDate" placeholder="e.g. Sep 2025" />
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-row">
+        <label>Job Type?</label>
+        <select id="type">
+          <option value="-">-</option>
+          <option value="Summer">Summer</option>
+          <option value="Full Time">Full Time</option>
+          <option value="Spring">Spring</option>
+          <option value="Vacation">Vacation</option>
+          <option value="Grad Scheme">Grad Scheme</option>
+          <option value="Off-Cycle">Off-Cycle</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Salary</label>
+        <select id="salary">
+          <option value="-">-</option>
+          <option value="Under £30K">Under £30K</option>
+          <option value="£30K – £40K">£30K – £40K</option>
+          <option value="£40K – £50K">£40K – £50K</option>
+          <option value="£50K – £60K">£50K – £60K</option>
+          <option value="£60K – £75K">£60K – £75K</option>
+          <option value="£75K – £100K">£75K – £100K</option>
+          <option value="£100K+">£100K+</option>
+          <option value="Competitive">Competitive</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-row">
+        <label>CV?</label>
+        <select id="cv">
+          <option value="-">-</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Cover Letter</label>
+        <select id="coverLetter">
+          <option value="-">-</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>Notes</label>
+      <textarea id="notes" placeholder="Deadline, referral, interview tips…"></textarea>
+    </div>
+
+    <button class="btn-save" id="btnSave">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnLabel">+ Add to Google Sheet</span>
+    </button>
+
+  </div>
+
+  <div class="counter-strip">
+    <span>Logged this session: <span class="val" id="count">0</span></span>
+    <a class="sheet-link" id="openSheet" href="#" target="_blank">Open Sheet ↗</a>
+  </div>
+
+</div>
+
+</div><!-- /.popup-wrap -->
+
+<div class="toast" id="toast"></div>
+
+<script src="popup.js"></script>
+</body>
+</html>
