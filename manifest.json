@@ -16,7 +16,9 @@
   ],
 
   "host_permissions": [
-    "https://*.googleapis.com/*"
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://drive.googleapis.com/*"
   ],
 
   "oauth2": {
@@ -29,14 +31,7 @@
     ]
   },
 
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
-    }
-  ],
-
-  "background": {
+"background": {
     "service_worker": "background.js"
   },
 
