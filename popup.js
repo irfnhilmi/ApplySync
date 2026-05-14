@@ -104,7 +104,6 @@ const REDIRECT_URI = `https://${chrome.runtime.id}.chromiumapp.org/`;
 const OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
   'https://www.googleapis.com/auth/drive.file',
-  'https://www.googleapis.com/auth/drive.metadata.readonly',
   'https://www.googleapis.com/auth/userinfo.email'
 ];
 
