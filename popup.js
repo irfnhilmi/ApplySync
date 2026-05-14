@@ -545,14 +545,23 @@ document.getElementById('btnScrape')
 
             } else if (url.includes('myworkdayjobs.com')) {
               role = document.querySelector('[data-automation-id="jobPostingHeader"]')?.innerText?.trim() || '';
-              rawLocation = document.querySelector('[data-automation-id="locations"]')?.innerText?.trim() ||
-                            document.querySelector('[data-automation-id="location"]')?.innerText?.trim() || '';
+
+              // Location: try DOM selectors, strip label prefix, fallback to URL path segment
+              const wdLocEl = document.querySelector('[data-automation-id="locations"], [data-automation-id="location"]');
+              rawLocation = (wdLocEl?.querySelector('dd, li, a, span') || wdLocEl)?.innerText?.trim() || '';
+              rawLocation = rawLocation.replace(/^locations?\s*:?\s*/i, '').trim();
+              if (!rawLocation) {
+                const pathParts = window.location.pathname.split('/');
+                const jobIdx = pathParts.indexOf('job');
+                if (jobIdx >= 0 && pathParts[jobIdx + 1])
+                  rawLocation = decodeURIComponent(pathParts[jobIdx + 1]).replace(/-/g, ' ');
+              }
+
               // Company from subdomain: moelis.wd1.myworkdayjobs.com → "Moelis"
               const wdHost = window.location.hostname.split('.')[0];
               company = wdHost.charAt(0).toUpperCase() + wdHost.slice(1);
-              // Also try og:site_name which Workday often populates
               const ogSite = document.querySelector('meta[property="og:site_name"]')?.content || '';
-              if (ogSite && ogSite.toLowerCase() !== 'workday') company = ogSite;
+              if (ogSite && !/^workday$/i.test(ogSite)) company = ogSite;
 
             } else if (url.includes('greenhouse.io') || url.includes('boards.greenhouse')) {
               role = document.querySelector('h1.app-title, h1[class*="title"], .posting-headline h2')?.innerText?.trim() || '';
@@ -569,19 +578,21 @@ document.getElementById('btnScrape')
               company = document.querySelector('[itemprop="name"], .company-name')?.innerText?.trim() || '';
               rawLocation = document.querySelector('[itemprop="jobLocation"], .job-detail--location')?.innerText?.trim() || '';
 
-            } else if (url.includes('careers.') || url.includes('/careers/') || url.includes('/jobs/')) {
-              // Generic career page fallback — try common patterns
-              role = document.querySelector('h1[class*="job"], h1[class*="title"], h1[class*="position"], h1[class*="role"]')?.innerText?.trim() ||
-                     document.querySelector('h1')?.innerText?.trim() || '';
-              rawLocation = document.querySelector('[class*="location"], [data-testid*="location"], [itemprop="jobLocation"]')?.innerText?.trim() || '';
+            } else if (url.includes('careers.') || url.includes('/careers/') || url.includes('/jobs/') || url.includes('/vacancies/')) {
+              // Split title on | to get role and company: "Role - Location | Company"
+              const titlePipe = document.title.split(' | ');
+              role = titlePipe[0].trim();
+              if (titlePipe.length > 1 && !company) company = titlePipe[titlePipe.length - 1].trim();
+              // Try to pull location from structured data only — don't guess from class names
+              rawLocation = document.querySelector('[itemprop="jobLocation"] [itemprop="name"]')?.innerText?.trim() ||
+                            document.querySelector('[itemprop="addressLocality"]')?.innerText?.trim() || '';
             }
 
             if (!company) company = document.querySelector('meta[property="og:site_name"]')?.content ||
                                     document.querySelector('meta[name="author"]')?.content || '';
             if (!role) role = document.querySelector('meta[property="og:title"]')?.content || '';
             if (!role && title) role = company ? title.replace(new RegExp(`[|\\-–—]?\\s*${company}\\s*$`, 'i'), '').trim() : title.trim();
-            // Strip trailing location suffix from role if it was baked into the title (e.g. "Analyst - London")
-            if (rawLocation && role.endsWith(rawLocation)) role = role.slice(0, -rawLocation.length).replace(/[\s\-–—]+$/, '').trim();
+
 
             const descText = document.querySelector('.jobs-description__content, .job-description, [class*="description"]')?.innerText || '';
             const pageText = descText || document.body.innerText.slice(0, 4000);
