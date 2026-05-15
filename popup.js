@@ -98,7 +98,7 @@ function setLoading(loading) {
 // Google Authentication
 // ─────────────────────────────────────────────
 
-const CLIENT_ID = '137045037004-g843cuenaut79iovc21nih4e7sctpd9g.apps.googleusercontent.com';
+const CLIENT_ID = '137045037004-5t7972boh917ec4c88frmlp5l0usb8qa.apps.googleusercontent.com';
 const REDIRECT_URI = `https://${chrome.runtime.id}.chromiumapp.org/`;
 
 const OAUTH_SCOPES = [

@@ -3,7 +3,7 @@
 
   "name": "ApplySync",
 
-  "version": "1.3",
+  "version": "1.4",
 
   "description": "Track job applications directly to Google Sheets.",
 
@@ -21,7 +21,7 @@
   ],
 
   "oauth2": {
-    "client_id": "137045037004-g843cuenaut79iovc21nih4e7sctpd9g.apps.googleusercontent.com",
+    "client_id": "137045037004-5t7972boh917ec4c88frmlp5l0usb8qa.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/spreadsheets",
       "https://www.googleapis.com/auth/drive.file",
